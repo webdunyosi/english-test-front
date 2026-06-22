@@ -24,7 +24,11 @@ const LoginPage = () => {
     setLoading(false);
 
     if (result.success) {
-      navigate('/test');
+      if (result.user?.role === 'admin') {
+        navigate('/admin/users');
+      } else {
+        navigate('/test');
+      }
     } else {
       setError(result.error || 'Kirishda xatolik yuz berdi');
     }

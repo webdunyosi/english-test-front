@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(data.user));
       setToken(data.token);
       setUser(data.user);
-      return { success: true };
+      return { success: true, user: data.user };
     } catch (err) {
       return { success: false, error: err.message };
     }
@@ -55,11 +55,15 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.message || 'Ro\'yxatdan o\'tishda xatolik yuz berdi');
       }
 
+      if (!data.token) {
+        return { success: true, pendingApproval: true, message: data.message };
+      }
+
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       setToken(data.token);
       setUser(data.user);
-      return { success: true };
+      return { success: true, user: data.user };
     } catch (err) {
       return { success: false, error: err.message };
     }

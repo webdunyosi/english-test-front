@@ -35,7 +35,14 @@ const RegisterPage = () => {
     setLoading(false);
 
     if (result.success) {
-      navigate('/test');
+      if (result.pendingApproval) {
+        alert(result.message || 'Ro\'yxatdan muvaffaqiyatli o\'tdingiz. Tizimga kirish uchun admin tasdiqlashini kuting.');
+        navigate('/login');
+      } else if (result.user?.role === 'admin') {
+        navigate('/admin/users');
+      } else {
+        navigate('/test');
+      }
     } else {
       setError(result.error || 'Ro\'yxatdan o\'tishda xatolik yuz berdi');
     }
