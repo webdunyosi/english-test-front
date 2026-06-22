@@ -2,25 +2,25 @@ import { Bell, LogOut, User } from 'lucide-react';
 
 const Header = () => {
   return (
-    <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-end px-8 sticky top-0 z-10">
+    <header className="h-16 glass-panel flex items-center justify-end px-8 sticky top-0 z-10 border-b border-white/10">
       <div className="flex items-center space-x-6">
-        <button className="text-gray-400 hover:text-blue-500 transition-colors relative">
+        <button className="text-gray-400 hover:text-blue-400 transition-colors relative">
           <Bell className="w-5 h-5" />
-          <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+          <span className="absolute top-0 right-0 w-2 h-2 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span>
         </button>
         
-        <div className="h-6 w-px bg-gray-200"></div>
+        <div className="h-6 w-px bg-white/10"></div>
 
         <div className="flex items-center space-x-4">
-          <button className="flex items-center space-x-2 hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors">
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+          <button className="flex items-center space-x-2 hover:bg-white/5 px-3 py-2 rounded-lg transition-colors border border-transparent hover:border-white/10">
+            <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 border border-blue-500/30">
               <User className="w-4 h-4" />
             </div>
-            <span className="text-sm font-medium text-gray-700 hidden sm:block">Profilim</span>
+            <span className="text-sm font-medium text-gray-300 hidden sm:block">Profilim</span>
           </button>
           
           <button 
-            className="flex items-center space-x-2 text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors"
+            className="flex items-center space-x-2 text-red-400 hover:bg-red-500/10 px-3 py-2 rounded-lg transition-colors border border-transparent hover:border-red-500/20"
             onClick={() => alert("Chiqish funksiyasi hozircha ulanmagan")}
           >
             <LogOut className="w-4 h-4" />
