@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { Toaster } from 'react-hot-toast';
 import Layout from './components/Layout';
 import TestPage from './pages/TestPage';
 import Leaderboard from './pages/Leaderboard';
@@ -48,6 +49,18 @@ const AdminRoute = ({ children }) => {
 const App = () => {
   return (
     <AuthProvider>
+      <Toaster 
+        position="top-right" 
+        toastOptions={{ 
+          style: { 
+            background: 'rgba(30, 41, 59, 0.9)', 
+            color: '#fff', 
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '16px'
+          } 
+        }} 
+      />
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />

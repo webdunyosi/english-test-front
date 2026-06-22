@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Lock, User, UserPlus } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const RegisterPage = () => {
   const [username, setUsername] = useState('');
@@ -36,7 +37,7 @@ const RegisterPage = () => {
 
     if (result.success) {
       if (result.pendingApproval) {
-        alert(result.message || 'Ro\'yxatdan muvaffaqiyatli o\'tdingiz. Tizimga kirish uchun admin tasdiqlashini kuting.');
+        toast.success(result.message || 'Ro\'yxatdan muvaffaqiyatli o\'tdingiz. Tizimga kirish uchun admin tasdiqlashini kuting.', { duration: 6000 });
         navigate('/login');
       } else if (result.user?.role === 'admin') {
         navigate('/admin/users');

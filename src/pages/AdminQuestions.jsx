@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { FilePlus, Trash2, HelpCircle, Check, Plus, AlertCircle, RefreshCw } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const AdminQuestions = () => {
   const { token, API_BASE } = useAuth();
@@ -91,7 +92,7 @@ const AdminQuestions = () => {
       
       // Refresh list
       fetchQuestions();
-      alert('Savol muvaffaqiyatli qo\'shildi!');
+      toast.success('Savol muvaffaqiyatli qo\'shildi!');
     } catch (err) {
       setFormError(err.message);
     } finally {
@@ -118,9 +119,9 @@ const AdminQuestions = () => {
       }
 
       fetchQuestions();
-      alert('Savol muvaffaqiyatli o\'chirildi!');
+      toast.success('Savol muvaffaqiyatli o\'chirildi!');
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 

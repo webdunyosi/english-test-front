@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-hot-toast';
 
 const TestPage = () => {
   const { user, API_BASE } = useAuth();
@@ -51,7 +52,7 @@ const TestPage = () => {
 
   const saveResult = async () => {
     if (!user) {
-      alert("Natijani saqlash uchun tizimga kiring!");
+      toast.error("Natijani saqlash uchun tizimga kiring!");
       return;
     }
     
@@ -74,9 +75,10 @@ const TestPage = () => {
       }
 
       setIsSaved(true);
+      toast.success("Natijangiz muvaffaqiyatli saqlandi!");
     } catch (err) {
       console.error(err);
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setIsSaving(false);
     }

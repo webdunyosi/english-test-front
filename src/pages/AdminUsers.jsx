@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { UserCheck, Trash2, Shield, Calendar, Users, CheckCircle, Search, RefreshCw } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const AdminUsers = () => {
   const { token, API_BASE } = useAuth();
@@ -41,7 +42,7 @@ const AdminUsers = () => {
   const handleApprove = async (userId) => {
     const groupName = groupInputs[userId]?.trim() || '';
     if (!groupName) {
-      alert("Iltimos, tasdiqlashdan oldin guruh nomini kiriting (masalan: IELTS 7.0, Intermediate)!");
+      toast.error("Iltimos, tasdiqlashdan oldin guruh nomini kiriting (masalan: IELTS 7.0, Intermediate)!");
       return;
     }
 
@@ -61,9 +62,9 @@ const AdminUsers = () => {
 
       // Refresh list
       fetchUsers();
-      alert("O'quvchi muvaffaqiyatli tasdiqlandi va guruhga qo'shildi!");
+      toast.success("O'quvchi muvaffaqiyatli tasdiqlandi va guruhga qo'shildi!");
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
@@ -86,9 +87,9 @@ const AdminUsers = () => {
       }
 
       fetchUsers();
-      alert("O'quvchi muvaffaqiyatli o'chirildi!");
+      toast.success("O'quvchi muvaffaqiyatli o'chirildi!");
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
