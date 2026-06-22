@@ -6,6 +6,9 @@ const TestPage = () => {
   const [error, setError] = useState(null);
   const [userAnswers, setUserAnswers] = useState({});
   const [score, setScore] = useState(null);
+  const [userName, setUserName] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -42,6 +45,39 @@ const TestPage = () => {
       }
     });
     setScore(calculatedScore);
+  };
+
+  const saveResult = async () => {
+    if (!userName.trim()) {
+      alert("Iltimos, ismingizni kiriting!");
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/results', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userName,
+          score,
+          totalQuestions: questions.length,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Natijani saqlashda xatolik yuz berdi");
+      }
+
+      setIsSaved(true);
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (loading) {
@@ -137,18 +173,45 @@ const TestPage = () => {
 
         {score !== null && (
           <div className="mt-12 bg-white rounded-2xl shadow-lg p-8 text-center border-t-4 border-blue-500 transform transition-all">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Test Complete!</h2>
-            <p className="text-xl text-gray-600">
-              Your score: <span className="font-extrabold text-blue-600">{score}</span> out of {questions.length}
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Test Yakunlandi!</h2>
+            <p className="text-xl text-gray-600 mb-6">
+              Sizning natijangiz: <span className="font-extrabold text-blue-600">{score}</span> / {questions.length}
             </p>
+            
+            {!isSaved ? (
+              <div className="max-w-sm mx-auto space-y-4">
+                <input
+                  type="text"
+                  placeholder="Ismingizni kiriting"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  disabled={isSaving}
+                />
+                <button
+                  onClick={saveResult}
+                  disabled={isSaving}
+                  className="w-full inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-base font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none disabled:bg-green-400 transition-colors duration-300"
+                >
+                  {isSaving ? "Saqlanmoqda..." : "Natijani Reytingga Qo'shish"}
+                </button>
+              </div>
+            ) : (
+              <div className="text-green-600 font-medium mb-6">
+                ✅ Natijangiz muvaffaqiyatli saqlandi!
+              </div>
+            )}
+
             <button
               onClick={() => {
                 setScore(null);
                 setUserAnswers({});
+                setUserName('');
+                setIsSaved(false);
               }}
               className="mt-6 inline-flex justify-center py-2 px-6 border border-gray-300 shadow-sm text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300"
             >
-              Retake Test
+              Qayta ishlash
             </button>
           </div>
         )}
