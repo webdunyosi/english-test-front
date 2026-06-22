@@ -80,14 +80,6 @@ const TestPage = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="bg-white/5 border border-red-500/20 text-red-400 px-4 py-3 rounded-2xl text-center max-w-lg mx-auto mt-10">
@@ -106,7 +98,23 @@ const TestPage = () => {
         <p className="text-lg text-gray-400">Answer the following questions to test your English skills.</p>
       </div>
 
-      {questions.length === 0 ? (
+      {loading ? (
+        <div className="space-y-8">
+          {[1, 2, 3].map((n) => (
+            <div key={n} className="glass-panel rounded-2xl p-8 border border-white/5 animate-pulse">
+              <div className="h-7 bg-white/10 rounded-lg w-3/4 mb-6"></div>
+              <div className="space-y-3">
+                {[1, 2, 3, 4].map((o) => (
+                  <div key={o} className="h-14 bg-white/5 border border-white/10 rounded-xl flex items-center px-4">
+                    <div className="h-4 w-4 bg-white/10 rounded-full mr-3"></div>
+                    <div className="h-4 bg-white/10 rounded-lg w-1/3"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : questions.length === 0 ? (
         <div className="glass-panel rounded-2xl p-8 text-center text-gray-400">
           No questions available. Please add some questions from the backend.
         </div>
