@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Trophy, Medal, Award, User } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Leaderboard = () => {
+  const { API_BASE } = useAuth();
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -9,7 +11,7 @@ const Leaderboard = () => {
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        const response = await fetch('https://english-test-back.onrender.com/api/results');
+        const response = await fetch(`${API_BASE}/api/results`);
         if (!response.ok) {
           throw new Error('Reytingni yuklab bo\'lmadi');
         }
@@ -23,7 +25,7 @@ const Leaderboard = () => {
     };
 
     fetchResults();
-  }, []);
+  }, [API_BASE]);
 
   const getRankStyle = (index) => {
     switch (index) {

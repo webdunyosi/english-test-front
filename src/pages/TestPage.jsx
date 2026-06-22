@@ -1,19 +1,21 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 const TestPage = () => {
+  const { user, API_BASE } = useAuth();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userAnswers, setUserAnswers] = useState({});
   const [score, setScore] = useState(null);
-  const [userName, setUserName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch('https://english-test-back.onrender.com/api/questions');
+        const response = await fetch(`${API_BASE}/api/questions`);
         if (!response.ok) {
           throw new Error('Failed to fetch questions');
         }
@@ -28,7 +30,7 @@ const TestPage = () => {
     };
 
     fetchQuestions();
-  }, []);
+  }, [API_BASE]);
 
   const handleOptionSelect = (questionId, option) => {
     setUserAnswers((prev) => ({
@@ -48,20 +50,20 @@ const TestPage = () => {
   };
 
   const saveResult = async () => {
-    if (!userName.trim()) {
-      alert("Iltimos, ismingizni kiriting!");
+    if (!user) {
+      alert("Natijani saqlash uchun tizimga kiring!");
       return;
     }
     
     setIsSaving(true);
     try {
-      const response = await fetch('https://english-test-back.onrender.com/api/results', {
+      const response = await fetch(`${API_BASE}/api/results`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userName,
+          userName: user.username,
           score,
           totalQuestions: questions.length,
         }),
@@ -187,20 +189,15 @@ const TestPage = () => {
           
           {!isSaved ? (
             <div className="max-w-sm mx-auto space-y-4">
-              <input
-                type="text"
-                placeholder="Ismingizni kiriting"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-white placeholder-gray-500 transition-all"
-                disabled={isSaving}
-              />
+              <p className="text-gray-400 text-sm">
+                Natijangizni <span className="font-semibold text-blue-400">{user?.username}</span> nomi bilan reytingga qo'shasizmi?
+              </p>
               <button
                 onClick={saveResult}
                 disabled={isSaving}
                 className="w-full inline-flex justify-center py-3 px-6 shadow-[0_0_15px_rgba(34,197,94,0.3)] text-base font-bold rounded-xl text-white bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-500 hover:to-emerald-400 focus:outline-none disabled:opacity-50 transition-all duration-300 transform hover:-translate-y-1"
               >
-                {isSaving ? "Saqlanmoqda..." : "Natijani Reytingga Qo'shish"}
+                {isSaving ? "Saqlanmoqda..." : "Ha, Reytingga Qo'shish"}
               </button>
             </div>
           ) : (
@@ -213,7 +210,6 @@ const TestPage = () => {
             onClick={() => {
               setScore(null);
               setUserAnswers({});
-              setUserName('');
               setIsSaved(false);
             }}
             className="mt-6 inline-flex justify-center py-2 px-6 border border-white/20 shadow-sm text-base font-medium rounded-xl text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 focus:outline-none transition-all duration-300"
