@@ -13,7 +13,7 @@ const TestPage = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/questions');
+        const response = await fetch('https://english-test-back.onrender.com/api/questions');
         if (!response.ok) {
           throw new Error('Failed to fetch questions');
         }
@@ -55,7 +55,7 @@ const TestPage = () => {
     
     setIsSaving(true);
     try {
-      const response = await fetch('http://localhost:5000/api/results', {
+      const response = await fetch('https://english-test-back.onrender.com/api/results', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -8,7 +8,7 @@ const Leaderboard = () => {
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/results');
+        const response = await fetch('https://english-test-back.onrender.com/api/results');
         if (!response.ok) {
           throw new Error('Reytingni yuklab bo\'lmadi');
         }
