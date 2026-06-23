@@ -2,6 +2,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Users, FilePlus, LogOut, ArrowLeft, ShieldAlert } from 'lucide-react';
 import AdminHeader from './AdminHeader';
+import AdminMobileBottomNav from './AdminMobileBottomNav';
 
 const AdminLayout = () => {
   const { user, logout } = useAuth();
@@ -89,11 +90,13 @@ const AdminLayout = () => {
         </header>
 
         {/* Inner Content Grid */}
-        <main className="flex-1 p-6 md:p-10 max-w-7xl w-full mx-auto overflow-y-auto">
+        <main className="flex-1 p-6 md:p-10 pb-24 md:pb-10 max-w-7xl w-full mx-auto overflow-y-auto">
           <Outlet />
         </main>
+        <AdminMobileBottomNav />
       </div>
     </div>
+
   );
 };
 
