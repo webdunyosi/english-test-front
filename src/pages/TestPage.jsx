@@ -1,39 +1,74 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
+import { BookOpen, ArrowLeft, ClipboardList, HelpCircle, Check, Loader2 } from 'lucide-react';
 
 const TestPage = () => {
   const { user, API_BASE } = useAuth();
+  
+  // Test selection states
+  const [tests, setTests] = useState([]);
+  const [selectedTest, setSelectedTest] = useState(null);
+  const [loadingTests, setLoadingTests] = useState(true);
+
+  // Questions and taking test states
   const [questions, setQuestions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [error, setError] = useState(null);
   const [userAnswers, setUserAnswers] = useState({});
   const [score, setScore] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
+  // Fetch unique test collections
+  const fetchTests = async () => {
+    setLoadingTests(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE}/api/tests`);
+      if (!response.ok) {
+        throw new Error('Testlar to\'plamini yuklab bo\'lmadi');
+      }
+      const data = await response.json();
+      setTests(data);
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    } finally {
+      setLoadingTests(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        const response = await fetch(`${API_BASE}/api/questions`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch questions');
-        }
-        const data = await response.json();
-        setQuestions(data);
-        setLoading(false);
-      } catch (err) {
-        console.error(err);
-        setError(err.message);
-        setLoading(false);
-      }
-    };
-
-    fetchQuestions();
+    fetchTests();
   }, [API_BASE]);
 
+  // Load questions for a selected test
+  const handleStartTest = async (testName) => {
+    setLoadingQuestions(true);
+    setError(null);
+    setSelectedTest(testName);
+    setScore(null);
+    setUserAnswers({});
+    setIsSaved(false);
+
+    try {
+      const response = await fetch(`${API_BASE}/api/questions?testName=${encodeURIComponent(testName)}`);
+      if (!response.ok) {
+        throw new Error('Test savollarini yuklab bo\'lmadi');
+      }
+      const data = await response.json();
+      setQuestions(data);
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    } finally {
+      setLoadingQuestions(false);
+    }
+  };
+
   const handleOptionSelect = (questionId, option) => {
+    if (score !== null) return; // Prevent changing answers after submission
     setUserAnswers((prev) => ({
       ...prev,
       [questionId]: option,
@@ -55,6 +90,7 @@ const TestPage = () => {
       toast.error("Natijani saqlash uchun tizimga kiring!");
       return;
     }
+    if (!selectedTest) return;
     
     setIsSaving(true);
     try {
@@ -65,6 +101,7 @@ const TestPage = () => {
         },
         body: JSON.stringify({
           userName: user.username,
+          testName: selectedTest,
           score,
           totalQuestions: questions.length,
         }),
@@ -84,50 +121,136 @@ const TestPage = () => {
     }
   };
 
+  const handleGoBack = () => {
+    setSelectedTest(null);
+    setQuestions([]);
+    setScore(null);
+    setUserAnswers({});
+    setIsSaved(false);
+    fetchTests();
+  };
+
   if (error) {
     return (
-      <div className="bg-white/5 border border-red-500/20 text-red-400 px-4 py-3 rounded-2xl text-center max-w-lg mx-auto mt-10">
-        <strong className="font-bold">Xatolik: </strong>
-        <span className="block sm:inline">{error}</span>
+      <div className="max-w-3xl mx-auto py-8">
+        <div className="bg-white/5 border border-red-500/20 text-red-400 px-4 py-3 rounded-2xl text-center max-w-lg mx-auto mt-10">
+          <strong className="font-bold">Xatolik: </strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+        <div className="text-center mt-6">
+          <button 
+            onClick={handleGoBack}
+            className="inline-flex items-center space-x-2 px-6 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl transition-all duration-300 text-sm font-semibold cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Ortga Qaytish</span>
+          </button>
+        </div>
       </div>
     );
   }
 
+  // SCREEN 1: List of all tests to choose from
+  if (!selectedTest) {
+    return (
+      <div className="max-w-5xl mx-auto py-8 px-4">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300 mb-4 tracking-tight drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]">
+            Ingliz Tili Testlar To'plami
+          </h1>
+          <p className="text-lg text-gray-400 max-w-xl mx-auto">
+            O'zingizga ma'qul bo'lgan test to'plamini tanlang va ingliz tili darajangizni sinab ko'ring.
+          </p>
+        </div>
+
+        {loadingTests ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="glass-panel rounded-3xl p-6 border border-white/5 animate-pulse h-48">
+                <div className="h-6 bg-white/10 rounded-lg w-3/4 mb-4"></div>
+                <div className="h-4 bg-white/10 rounded-lg w-1/2 mb-8"></div>
+                <div className="h-10 bg-white/10 rounded-xl w-full"></div>
+              </div>
+            ))}
+          </div>
+        ) : tests.length === 0 ? (
+          <div className="glass-panel rounded-3xl p-12 text-center text-gray-400 max-w-lg mx-auto">
+            <ClipboardList className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+            <p className="text-lg font-medium">Hozircha hech qanday test yaratilmagan.</p>
+            <p className="text-sm text-gray-500 mt-1">Iltimos, admin tomonidan test savollari qo'shilishini kuting.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {tests.map((test) => (
+              <div 
+                key={test.name}
+                className="glass-panel rounded-3xl p-6 border border-white/5 hover:border-blue-500/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(59,130,246,0.1)] flex flex-col justify-between"
+              >
+                <div>
+                  <div className="p-3 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-2xl w-fit mb-4">
+                    <BookOpen className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2 tracking-tight line-clamp-2">
+                    {test.name}
+                  </h3>
+                  <p className="text-sm text-gray-400 mb-6">
+                    Savollar soni: <span className="text-blue-400 font-semibold">{test.questionCount} ta</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleStartTest(test.name)}
+                  className="w-full inline-flex justify-center items-center py-3 px-6 shadow-[0_4px_15px_rgba(37,99,235,0.2)] text-sm font-bold rounded-2xl text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer"
+                >
+                  Testni Boshlash
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // SCREEN 2: Loading screen for question fetching
+  if (loadingQuestions) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+        <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
+        <p className="text-gray-400 font-medium">Test savollari yuklanmoqda...</p>
+      </div>
+    );
+  }
+
+  // SCREEN 3: Taking the test
   return (
-    <div className="max-w-3xl mx-auto py-8">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300 mb-4 tracking-tight drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]">
-          English Proficiency Test
-        </h1>
-        <p className="text-lg text-gray-400">Answer the following questions to test your English skills.</p>
+    <div className="max-w-3xl mx-auto py-8 px-4">
+      {/* Back button and test title */}
+      <div className="flex items-center space-x-4 mb-8">
+        <button
+          onClick={handleGoBack}
+          className="p-3 bg-white/5 border border-white/10 hover:bg-white/10 text-gray-400 hover:text-white rounded-2xl transition-all duration-300 cursor-pointer"
+          title="Testlar ro'yxatiga qaytish"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <div>
+          <span className="text-xs uppercase font-extrabold tracking-widest text-blue-400">TEST REJIMI</span>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            {selectedTest}
+          </h1>
+        </div>
       </div>
 
-      {loading ? (
-        <div className="space-y-8">
-          {[1, 2, 3].map((n) => (
-            <div key={n} className="glass-panel rounded-2xl p-8 border border-white/5 animate-pulse">
-              <div className="h-7 bg-white/10 rounded-lg w-3/4 mb-6"></div>
-              <div className="space-y-3">
-                {[1, 2, 3, 4].map((o) => (
-                  <div key={o} className="h-14 bg-white/5 border border-white/10 rounded-xl flex items-center px-4">
-                    <div className="h-4 w-4 bg-white/10 rounded-full mr-3"></div>
-                    <div className="h-4 bg-white/10 rounded-lg w-1/3"></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : questions.length === 0 ? (
-        <div className="glass-panel rounded-2xl p-8 text-center text-gray-400">
-          No questions available. Please add some questions from the backend.
+      {questions.length === 0 ? (
+        <div className="glass-panel rounded-3xl p-8 text-center text-gray-400">
+          Ushbu test to'plamida savollar mavjud emas.
         </div>
       ) : (
         <div className="space-y-8">
           {questions.map((q, index) => (
-            <div key={q._id} className="glass-panel rounded-2xl p-8 transition-all duration-300 hover:border-white/20">
-              <h3 className="text-xl font-semibold text-white mb-6">
-                <span className="text-blue-400 mr-2 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]">{index + 1}.</span>
+            <div key={q._id} className="glass-panel rounded-3xl p-8 border border-white/5 transition-all duration-300 hover:border-white/10">
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-6">
+                <span className="text-blue-400 mr-2 font-black">{index + 1}.</span>
                 {q.question}
               </h3>
               <div className="space-y-3">
@@ -138,7 +261,7 @@ const TestPage = () => {
                       userAnswers[q._id] === option 
                         ? 'border-blue-500 bg-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]' 
                         : 'border-white/10 hover:bg-white/5 hover:border-white/20'
-                    }`}
+                    } ${score !== null ? 'pointer-events-none' : ''}`}
                   >
                     <input
                       type="radio"
@@ -146,22 +269,22 @@ const TestPage = () => {
                       value={option}
                       checked={userAnswers[q._id] === option}
                       onChange={() => handleOptionSelect(q._id, option)}
-                      className="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-600 bg-gray-800"
+                      className="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-600 bg-gray-800 cursor-pointer"
                       disabled={score !== null}
                     />
-                    <span className="ml-3 text-gray-300">{option}</span>
+                    <span className="ml-3 text-gray-300 font-medium">{option}</span>
                   </label>
                 ))}
               </div>
               {score !== null && (
-                <div className="mt-6 p-4 rounded-xl text-sm font-medium">
+                <div className="mt-6">
                   {userAnswers[q._id] === q.correctAnswer ? (
-                    <div className="text-green-400 bg-green-500/10 p-3 rounded-lg border border-green-500/20 shadow-[0_0_10px_rgba(34,197,94,0.1)]">
-                      ✅ Correct!
+                    <div className="text-green-400 bg-green-500/10 p-3.5 rounded-xl border border-green-500/20 shadow-[0_0_10px_rgba(34,197,94,0.1)] font-semibold text-sm">
+                      ✅ To'g'ri javob!
                     </div>
                   ) : (
-                    <div className="text-red-400 bg-red-500/10 p-3 rounded-lg border border-red-500/20 shadow-[0_0_10px_rgba(239,68,68,0.1)]">
-                      ❌ Incorrect. The correct answer is: <span className="font-bold text-red-300">{q.correctAnswer}</span>
+                    <div className="text-red-400 bg-red-500/10 p-3.5 rounded-xl border border-red-500/20 shadow-[0_0_10px_rgba(239,68,68,0.1)] text-sm">
+                      ❌ Noto'g'ri. To'g'ri javob: <span className="font-bold text-red-300">{q.correctAnswer}</span>
                     </div>
                   )}
                 </div>
@@ -171,53 +294,63 @@ const TestPage = () => {
         </div>
       )}
 
+      {/* Submit button */}
       {questions.length > 0 && score === null && (
         <div className="mt-12 text-center">
           <button
             onClick={handleSubmit}
-            className="inline-flex justify-center py-3 px-8 border border-transparent shadow-[0_0_20px_rgba(37,99,235,0.4)] text-lg font-bold rounded-xl text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 focus:outline-none transition-all duration-300 transform hover:scale-105"
+            className="inline-flex justify-center py-3.5 px-10 border border-transparent shadow-[0_4px_20px_rgba(37,99,235,0.4)] text-lg font-bold rounded-2xl text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 focus:outline-none transition-all duration-300 transform hover:scale-105 cursor-pointer"
           >
-            Submit Answers
+            Javoblarni Yakunlash
           </button>
         </div>
       )}
 
+      {/* Result Display & Save Result Box */}
       {score !== null && (
-        <div className="mt-12 glass-panel rounded-2xl p-8 text-center border-t-4 border-blue-500 transform transition-all shadow-[0_0_30px_rgba(59,130,246,0.15)]">
-          <h2 className="text-3xl font-bold text-white mb-2 drop-shadow-md">Test Yakunlandi!</h2>
-          <p className="text-xl text-gray-300 mb-6">
-            Sizning natijangiz: <span className="font-extrabold text-blue-400 text-2xl drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">{score}</span> / {questions.length}
+        <div className="mt-12 glass-panel rounded-3xl p-8 text-center border-t-4 border-blue-500 shadow-[0_10px_40px_rgba(59,130,246,0.15)] animate-fadeIn">
+          <h2 className="text-3xl font-extrabold text-white mb-2 drop-shadow-md">Test Tugadi!</h2>
+          <p className="text-xl text-gray-300 mb-6 font-medium">
+            Natijangiz: <span className="font-black text-blue-400 text-3xl drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">{score}</span> / {questions.length}
           </p>
           
           {!isSaved ? (
             <div className="max-w-sm mx-auto space-y-4">
               <p className="text-gray-400 text-sm">
-                Natijangizni <span className="font-semibold text-blue-400">{user?.username}</span> nomi bilan reytingga qo'shasizmi?
+                Natijangizni <span className="font-bold text-blue-400">{user?.username}</span> nomi bilan reytingga qo'shasizmi?
               </p>
               <button
                 onClick={saveResult}
                 disabled={isSaving}
-                className="w-full inline-flex justify-center py-3 px-6 shadow-[0_0_15px_rgba(34,197,94,0.3)] text-base font-bold rounded-xl text-white bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-500 hover:to-emerald-400 focus:outline-none disabled:opacity-50 transition-all duration-300 transform hover:-translate-y-1"
+                className="w-full inline-flex justify-center py-3.5 px-6 shadow-[0_4px_15px_rgba(34,197,94,0.3)] text-base font-bold rounded-2xl text-white bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-500 hover:to-emerald-400 focus:outline-none disabled:opacity-50 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
               >
                 {isSaving ? "Saqlanmoqda..." : "Ha, Reytingga Qo'shish"}
               </button>
             </div>
           ) : (
-            <div className="text-green-400 font-medium mb-6 bg-green-500/10 p-4 rounded-xl border border-green-500/20">
+            <div className="text-green-400 font-bold mb-6 bg-green-500/10 p-4 rounded-2xl border border-green-500/20 text-base">
               ✅ Natijangiz muvaffaqiyatli saqlandi!
             </div>
           )}
 
-          <button
-            onClick={() => {
-              setScore(null);
-              setUserAnswers({});
-              setIsSaved(false);
-            }}
-            className="mt-6 inline-flex justify-center py-2 px-6 border border-white/20 shadow-sm text-base font-medium rounded-xl text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 focus:outline-none transition-all duration-300"
-          >
-            Qayta ishlash
-          </button>
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
+            <button
+              onClick={() => {
+                setScore(null);
+                setUserAnswers({});
+                setIsSaved(false);
+              }}
+              className="inline-flex justify-center items-center py-2.5 px-6 border border-white/20 shadow-sm text-sm font-bold rounded-2xl text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 focus:outline-none transition-all duration-300 cursor-pointer"
+            >
+              Qayta ishlash
+            </button>
+            <button
+              onClick={handleGoBack}
+              className="inline-flex justify-center items-center py-2.5 px-6 border border-blue-500/20 shadow-sm text-sm font-bold rounded-2xl text-blue-400 hover:text-blue-300 bg-blue-500/5 hover:bg-blue-500/10 focus:outline-none transition-all duration-300 cursor-pointer"
+            >
+              Boshqa test tanlash
+            </button>
+          </div>
         </div>
       )}
     </div>

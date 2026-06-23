@@ -6,15 +6,30 @@ import { toast } from 'react-hot-toast';
 const AdminQuestions = () => {
   const { token, API_BASE } = useAuth();
   const [questions, setQuestions] = useState([]);
+  const [existingTests, setExistingTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Form states
+  const [testName, setTestName] = useState('');
   const [questionText, setQuestionText] = useState('');
   const [options, setOptions] = useState(['', '', '', '']);
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [formError, setFormError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedTestFilter, setSelectedTestFilter] = useState('Barchasi');
+
+  const fetchTests = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/tests`);
+      if (response.ok) {
+        const data = await response.json();
+        setExistingTests(data.map(t => t.name));
+      }
+    } catch (err) {
+      console.error("Error fetching test list:", err);
+    }
+  };
 
   const fetchQuestions = async () => {
     setLoading(true);
@@ -35,6 +50,7 @@ const AdminQuestions = () => {
 
   useEffect(() => {
     fetchQuestions();
+    fetchTests();
   }, []);
 
   const handleOptionChange = (index, value) => {
@@ -48,6 +64,10 @@ const AdminQuestions = () => {
     setFormError('');
 
     // Validations
+    if (!testName.trim()) {
+      setFormError('Test nomini kiriting yoki tanlang!');
+      return;
+    }
     if (!questionText.trim()) {
       setFormError('Savol matnini kiriting!');
       return;
@@ -74,6 +94,7 @@ const AdminQuestions = () => {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
+          testName: testName.trim(),
           question: questionText.trim(),
           options: options.map(o => o.trim()),
           correctAnswer: correctAnswer.trim()
@@ -85,13 +106,14 @@ const AdminQuestions = () => {
         throw new Error(data.message || 'Savol qo\'shishda xatolik yuz berdi');
       }
 
-      // Reset form
+      // Reset form (except test name, as we want to add questions to the same test category sequentially)
       setQuestionText('');
       setOptions(['', '', '', '']);
       setCorrectAnswer('');
       
-      // Refresh list
+      // Refresh list & test names
       fetchQuestions();
+      fetchTests();
       toast.success('Savol muvaffaqiyatli qo\'shildi!');
     } catch (err) {
       setFormError(err.message);
@@ -119,11 +141,17 @@ const AdminQuestions = () => {
       }
 
       fetchQuestions();
+      fetchTests();
       toast.success('Savol muvaffaqiyatli o\'chirildi!');
     } catch (err) {
       toast.error(err.message);
     }
   };
+
+  const filteredQuestions = questions.filter(q => {
+    if (selectedTestFilter === 'Barchasi') return true;
+    return q.testName?.toLowerCase() === selectedTestFilter.toLowerCase();
+  });
 
   return (
     <div className="space-y-8 animate-fadeIn">
@@ -137,7 +165,7 @@ const AdminQuestions = () => {
         </div>
 
         <button 
-          onClick={fetchQuestions}
+          onClick={() => { fetchQuestions(); fetchTests(); }}
           className="inline-flex items-center space-x-2 self-start py-2.5 px-4 bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 rounded-xl transition-all duration-300 text-purple-300"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -163,6 +191,21 @@ const AdminQuestions = () => {
           )}
 
           <form onSubmit={handleAddQuestion} className="space-y-5">
+            {/* Test Name (Category) */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                Test Nomi (Turi)
+              </label>
+              <input
+                type="text"
+                required
+                value={testName}
+                onChange={(e) => setTestName(e.target.value)}
+                placeholder="Masalan: Unit 1 Test, Intermediate Test"
+                className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-sm"
+              />
+            </div>
+
             {/* Question Text */}
             <div>
               <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
@@ -210,7 +253,7 @@ const AdminQuestions = () => {
                 required
                 value={correctAnswer}
                 onChange={(e) => setCorrectAnswer(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-900 border border-purple-500/10 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-sm"
+                className="w-full px-4 py-3 bg-gray-900 border border-purple-500/10 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-sm cursor-pointer"
               >
                 <option value="">-- Tanlang --</option>
                 {options.map((opt, index) => (
@@ -227,7 +270,7 @@ const AdminQuestions = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center space-x-2 py-3 px-4 border border-transparent text-sm font-bold rounded-2xl text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 focus:outline-none transition-all duration-300 transform hover:scale-[1.02] shadow-[0_0_20px_rgba(168,85,247,0.3)] disabled:opacity-50"
+              className="w-full flex items-center justify-center space-x-2 py-3 px-4 border border-transparent text-sm font-bold rounded-2xl text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 focus:outline-none transition-all duration-300 transform hover:scale-[1.02] shadow-[0_0_20px_rgba(168,85,247,0.3)] disabled:opacity-50 cursor-pointer"
             >
               <Plus className="w-5 h-5" />
               <span>{isSubmitting ? 'Qo\'shilmoqda...' : 'Savolni Qo\'shish'}</span>
@@ -237,9 +280,29 @@ const AdminQuestions = () => {
 
         {/* Questions List panel */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center space-x-3 mb-2">
-            <HelpCircle className="w-5 h-5 text-purple-400" />
-            <h2 className="text-xl font-bold text-white">Mavjud Savollar ({questions.length})</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
+            <div className="flex items-center space-x-3">
+              <HelpCircle className="w-5 h-5 text-purple-400" />
+              <h2 className="text-xl font-bold text-white">Mavjud Savollar ({filteredQuestions.length})</h2>
+            </div>
+            
+            {/* Test Filter */}
+            {existingTests.length > 0 && (
+              <div className="relative min-w-[200px]">
+                <select
+                  value={selectedTestFilter}
+                  onChange={(e) => setSelectedTestFilter(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-gray-900 border border-purple-500/10 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300 text-sm cursor-pointer"
+                >
+                  <option value="Barchasi">Barcha testlar</option>
+                  {existingTests.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           {loading ? (
@@ -252,21 +315,26 @@ const AdminQuestions = () => {
             <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-6 rounded-2xl text-center">
               {error}
             </div>
-          ) : questions.length === 0 ? (
+          ) : filteredQuestions.length === 0 ? (
             <div className="text-center py-16 bg-purple-950/5 border border-purple-500/10 rounded-3xl backdrop-blur-md">
-              <p className="text-gray-400 text-lg">Hozircha hech qanday savol qo'shilmagan.</p>
+              <p className="text-gray-400 text-lg">Bu test turida hech qanday savol topilmadi.</p>
             </div>
           ) : (
             <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-              {questions.map((q, idx) => (
+              {filteredQuestions.map((q, idx) => (
                 <div 
                   key={q._id} 
                   className="glass-panel p-6 rounded-2xl border border-purple-500/10 hover:border-purple-500/20 transition-all duration-300 backdrop-blur-md flex justify-between items-start gap-4"
                 >
                   <div className="space-y-4 flex-1">
-                    <h3 className="text-lg font-bold text-white flex items-start">
-                      <span className="text-purple-400 mr-2">{idx + 1}.</span>
-                      <span>{q.question}</span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-purple-400 font-bold text-lg">{idx + 1}.</span>
+                      <span className="text-xs px-2.5 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-300 rounded-full font-semibold">
+                        {q.testName || 'General Test'}
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-bold text-white">
+                      {q.question}
                     </h3>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -292,7 +360,7 @@ const AdminQuestions = () => {
 
                   <button
                     onClick={() => handleDeleteQuestion(q._id)}
-                    className="p-2 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/30 text-red-400 rounded-xl transition-all duration-300 mt-1 shrink-0"
+                    className="p-2 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/30 text-red-400 rounded-xl transition-all duration-300 mt-1 shrink-0 cursor-pointer"
                     title="Savolni o'chirish"
                   >
                     <Trash2 className="w-4 h-4" />

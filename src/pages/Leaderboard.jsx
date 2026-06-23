@@ -5,28 +5,52 @@ import { useAuth } from '../context/AuthContext';
 const Leaderboard = () => {
   const { API_BASE, user } = useAuth();
   const [results, setResults] = useState([]);
+  const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Filter states
   const [selectedGroup, setSelectedGroup] = useState('Barchasi');
+  const [selectedTest, setSelectedTest] = useState('Barchasi');
 
+  // Fetch unique tests list
+  useEffect(() => {
+    const fetchTests = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/tests`);
+        if (response.ok) {
+          const data = await response.json();
+          setTests(data.map(t => t.name));
+        }
+      } catch (err) {
+        console.error("Error fetching tests list:", err);
+      }
+    };
+    fetchTests();
+  }, [API_BASE]);
+
+  // Fetch results based on selected test filter
   useEffect(() => {
     const fetchResults = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const response = await fetch(`${API_BASE}/api/results`);
+        const testParam = selectedTest !== 'Barchasi' ? `?testName=${encodeURIComponent(selectedTest)}` : '';
+        const response = await fetch(`${API_BASE}/api/results${testParam}`);
         if (!response.ok) {
           throw new Error('Reytingni yuklab bo\'lmadi');
         }
         const data = await response.json();
         setResults(data);
-        setLoading(false);
       } catch (err) {
         setError(err.message);
+      } finally {
         setLoading(false);
       }
     };
 
     fetchResults();
-  }, [API_BASE]);
+  }, [API_BASE, selectedTest]);
 
   // Set default group filter to student's group
   useEffect(() => {
@@ -80,7 +104,7 @@ const Leaderboard = () => {
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header section with title and filter */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div className="flex items-center space-x-4">
           <div className="p-3 bg-blue-500/20 rounded-xl border border-blue-500/30">
             <Trophy className="w-8 h-8 text-blue-400" />
@@ -97,13 +121,35 @@ const Leaderboard = () => {
           </div>
         </div>
 
-        {/* Group Filter Dropdown */}
-        {!loading && results.length > 0 && (
-          <div className="relative min-w-[200px]">
+        {/* Filters Panel */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Test Filter Dropdown */}
+          <div className="relative min-w-[180px]">
+            <select
+              value={selectedTest}
+              onChange={(e) => setSelectedTest(e.target.value)}
+              className="w-full px-4 py-2.5 bg-gray-900 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 text-sm cursor-pointer appearance-none pr-10"
+            >
+              <option value="Barchasi" className="bg-gray-900 text-white">Barcha testlar</option>
+              {tests.map((t) => (
+                <option key={t} value={t} className="bg-gray-900 text-white">
+                  {t}
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Group Filter Dropdown */}
+          <div className="relative min-w-[180px]">
             <select
               value={selectedGroup}
               onChange={(e) => setSelectedGroup(e.target.value)}
-              className="w-full px-4 py-2.5 bg-gray-900/50 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 text-sm cursor-pointer appearance-none pr-10"
+              className="w-full px-4 py-2.5 bg-gray-900 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 text-sm cursor-pointer appearance-none pr-10"
             >
               {uniqueGroups.map((g) => (
                 <option key={g} value={g} className="bg-gray-900 text-white">
@@ -117,7 +163,7 @@ const Leaderboard = () => {
               </svg>
             </div>
           </div>
-        )}
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -141,7 +187,7 @@ const Leaderboard = () => {
           </div>
         ) : results.length === 0 ? (
           <div className="text-center py-12 glass-panel rounded-2xl">
-            <p className="text-gray-400">Hali hech kim test ishlamagan</p>
+            <p className="text-gray-400">Ushbu test turi bo'yicha hali hech kim natija qayd etmagan</p>
           </div>
         ) : filteredResults.length === 0 ? (
           <div className="text-center py-12 glass-panel rounded-2xl">
