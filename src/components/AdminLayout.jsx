@@ -16,13 +16,13 @@ const AdminLayout = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <div className="min-h-screen bg-[#090514] text-gray-100 flex relative overflow-hidden font-sans">
+    <div className="h-screen bg-[#090514] text-gray-100 flex relative overflow-hidden font-sans">
       {/* Background Neon Blobs for Admin Purple Theme */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-purple-600/10 blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-violet-600/10 blur-[120px] pointer-events-none"></div>
 
       {/* Admin Sidebar */}
-      <aside className="w-64 bg-purple-950/10 backdrop-blur-xl border-r border-purple-500/20 p-6 flex flex-col justify-between hidden md:flex sticky top-0 h-screen z-20">
+      <aside className="w-64 bg-purple-950/10 backdrop-blur-xl border-r border-purple-500/20 p-6 flex flex-col justify-between hidden md:flex h-full shrink-0 z-20">
         <div className="space-y-8">
           {/* Logo / Title */}
           <div className="flex items-center space-x-3">
@@ -71,7 +71,7 @@ const AdminLayout = () => {
       </aside>
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Admin Header (Desktop Only) */}
         <AdminHeader />
 
@@ -89,7 +89,7 @@ const AdminLayout = () => {
         </header>
 
         {/* Inner Content Grid */}
-        <main className="flex-1 p-6 md:p-10 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-6 md:p-10 max-w-7xl w-full mx-auto overflow-y-auto">
           <Outlet />
         </main>
       </div>
