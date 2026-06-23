@@ -63,16 +63,6 @@ const AdminLayout = () => {
               <FilePlus className="w-5 h-5" />
               <span>Testlar Qo'shish</span>
             </Link>
-
-            <div className="h-px bg-purple-500/10 my-4"></div>
-
-            <Link
-              to="/test"
-              className="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-300 border border-transparent"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span>O'quvchi Tizimi</span>
-            </Link>
           </nav>
         </div>
 
