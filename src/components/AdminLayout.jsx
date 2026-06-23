@@ -1,6 +1,7 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Users, FilePlus, LogOut, ArrowLeft, ShieldAlert } from 'lucide-react';
+import AdminHeader from './AdminHeader';
 
 const AdminLayout = () => {
   const { user, logout } = useAuth();
@@ -66,30 +67,14 @@ const AdminLayout = () => {
           </nav>
         </div>
 
-        {/* User Info & Logout */}
-        <div className="space-y-4">
-          <div className="flex items-center space-x-3 p-3 bg-purple-900/10 border border-purple-500/10 rounded-2xl">
-            <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center border border-purple-500/30 text-purple-400">
-              U
-            </div>
-            <div className="overflow-hidden">
-              <p className="text-sm font-bold text-white truncate">{user?.username}</p>
-              <p className="text-[10px] text-purple-400 font-semibold uppercase">Admin</p>
-            </div>
-          </div>
 
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center space-x-2 py-3 border border-red-500/20 shadow-sm text-sm font-bold rounded-2xl text-red-400 bg-red-500/5 hover:bg-red-500/10 hover:border-red-500/30 transition-all duration-300"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Chiqish</span>
-          </button>
-        </div>
       </aside>
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
+        {/* Admin Header (Desktop Only) */}
+        <AdminHeader />
+
         {/* Mobile Header */}
         <header className="h-16 bg-[#090514]/80 backdrop-blur-xl border-b border-purple-500/10 flex items-center justify-between px-6 md:hidden sticky top-0 z-20">
           <div className="flex items-center space-x-2">
