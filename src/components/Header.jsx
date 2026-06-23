@@ -84,7 +84,7 @@ const Header = () => {
   };
 
   return (
-    <header className="h-16 glass-panel flex items-center justify-end px-8 sticky top-0 z-10 border-b border-white/10">
+    <header className="hidden md:flex h-16 glass-panel flex items-center justify-end px-8 sticky top-0 z-10 border-b border-white/10">
       <div className="flex items-center space-x-6">
         <button className="text-gray-400 hover:text-blue-400 transition-colors relative cursor-pointer">
           <Bell className="w-5 h-5" />

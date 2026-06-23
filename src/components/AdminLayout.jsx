@@ -76,18 +76,6 @@ const AdminLayout = () => {
         {/* Admin Header (Desktop Only) */}
         <AdminHeader />
 
-        {/* Mobile Header */}
-        <header className="h-16 bg-[#090514]/80 backdrop-blur-xl border-b border-purple-500/10 flex items-center justify-between px-6 md:hidden sticky top-0 z-20">
-          <div className="flex items-center space-x-2">
-            <ShieldAlert className="w-6 h-6 text-purple-400" />
-            <span className="font-extrabold text-white tracking-wider">EduTest Admin</span>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Link to="/admin/users" className={`text-sm ${isActive('/admin/users') ? 'text-purple-400 font-bold' : 'text-gray-400'}`}>O'quvchilar</Link>
-            <Link to="/admin/questions" className={`text-sm ${isActive('/admin/questions') ? 'text-purple-400 font-bold' : 'text-gray-400'}`}>Testlar</Link>
-            <button onClick={handleLogout} className="text-red-400"><LogOut className="w-5 h-5" /></button>
-          </div>
-        </header>
 
         {/* Inner Content Grid */}
         <main className="flex-1 p-6 md:p-10 pb-24 md:pb-10 max-w-7xl w-full mx-auto overflow-y-auto">
