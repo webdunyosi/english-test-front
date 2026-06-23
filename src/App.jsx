@@ -5,6 +5,7 @@ import Layout from './components/Layout';
 import TestPage from './pages/TestPage';
 import Leaderboard from './pages/Leaderboard';
 import ProfilePage from './pages/ProfilePage';
+import NotificationsPage from './pages/NotificationsPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AdminLayout from './components/AdminLayout';
@@ -78,6 +79,7 @@ const App = () => {
             <Route path="test" element={<TestPage />} />
             <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="profile" element={<ProfilePage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
           </Route>
 
           {/* Admin Protected Routes */}

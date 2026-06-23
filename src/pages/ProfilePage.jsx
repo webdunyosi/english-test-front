@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
-  User, Phone, Edit2, CalendarCheck, Bell, BookOpen,
+  User, Phone, Edit2, CalendarCheck, BookOpen,
   Send, LogOut, ChevronRight, Lock, Eye, EyeOff, X
 } from 'lucide-react';
+
 
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
@@ -78,14 +79,6 @@ const ProfilePage = () => {
       onClick: () => toast('Tez orada mavjud bo\'ladi!', { icon: '📋' })
     },
     {
-      icon: <Bell className="w-5 h-5 text-blue-400" />,
-      label: "Mening bildirishnomalarim",
-      bg: "bg-blue-500/15",
-      border: "border-blue-500/20",
-      badge: null,
-      onClick: () => toast('Bildirishnomalar tez orada!', { icon: '🔔' })
-    },
-    {
       icon: <BookOpen className="w-5 h-5 text-blue-400" />,
       label: "Ilovadan foydalanish darsliklari",
       bg: "bg-blue-500/15",
@@ -94,6 +87,7 @@ const ProfilePage = () => {
       onClick: () => toast('Darsliklar tez orada!', { icon: '📚' })
     },
   ];
+
 
   const contactItems = [
     {
