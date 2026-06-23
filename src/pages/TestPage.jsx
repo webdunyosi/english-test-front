@@ -75,7 +75,7 @@ const TestPage = () => {
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     let calculatedScore = 0;
     questions.forEach((q) => {
       if (userAnswers[q._id] === q.correctAnswer) {
@@ -83,15 +83,13 @@ const TestPage = () => {
       }
     });
     setScore(calculatedScore);
-  };
 
-  const saveResult = async () => {
     if (!user) {
       toast.error("Natijani saqlash uchun tizimga kiring!");
       return;
     }
     if (!selectedTest) return;
-    
+
     setIsSaving(true);
     try {
       const response = await fetch(`${API_BASE}/api/results`, {
@@ -102,7 +100,7 @@ const TestPage = () => {
         body: JSON.stringify({
           userName: user.username,
           testName: selectedTest,
-          score,
+          score: calculatedScore,
           totalQuestions: questions.length,
         }),
       });
@@ -309,27 +307,22 @@ const TestPage = () => {
       {/* Result Display & Save Result Box */}
       {score !== null && (
         <div className="mt-12 glass-panel rounded-3xl p-8 text-center border-t-4 border-blue-500 shadow-[0_10px_40px_rgba(59,130,246,0.15)] animate-fadeIn">
-          <h2 className="text-3xl font-extrabold text-white mb-2 drop-shadow-md">Test Tugadi!</h2>
+          <h2 className="text-3xl font-extrabold text-white mb-2 drop-shadow-md">Test Yakunlandi!</h2>
           <p className="text-xl text-gray-300 mb-6 font-medium">
-            Natijangiz: <span className="font-black text-blue-400 text-3xl drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">{score}</span> / {questions.length}
+            Sizning natijangiz: <span className="font-black text-blue-400 text-3xl drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">{score}</span> / {questions.length}
           </p>
           
-          {!isSaved ? (
-            <div className="max-w-sm mx-auto space-y-4">
-              <p className="text-gray-400 text-sm">
-                Natijangizni <span className="font-bold text-blue-400">{user?.username}</span> nomi bilan reytingga qo'shasizmi?
-              </p>
-              <button
-                onClick={saveResult}
-                disabled={isSaving}
-                className="w-full inline-flex justify-center py-3.5 px-6 shadow-[0_4px_15px_rgba(34,197,94,0.3)] text-base font-bold rounded-2xl text-white bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-500 hover:to-emerald-400 focus:outline-none disabled:opacity-50 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
-              >
-                {isSaving ? "Saqlanmoqda..." : "Ha, Reytingga Qo'shish"}
-              </button>
+          {isSaving ? (
+            <div className="text-blue-400 font-bold mb-6 bg-blue-500/10 p-4 rounded-2xl border border-blue-500/20 text-base animate-pulse">
+              Natija reytingga saqlanmoqda...
+            </div>
+          ) : isSaved ? (
+            <div className="text-green-400 font-bold mb-6 bg-green-500/10 p-4 rounded-2xl border border-green-500/20 text-base">
+              ✅ Natijangiz reytingga muvaffaqiyatli saqlandi!
             </div>
           ) : (
-            <div className="text-green-400 font-bold mb-6 bg-green-500/10 p-4 rounded-2xl border border-green-500/20 text-base">
-              ✅ Natijangiz muvaffaqiyatli saqlandi!
+            <div className="text-red-400 font-bold mb-6 bg-red-500/10 p-4 rounded-2xl border border-red-500/20 text-base">
+              ❌ Natijani saqlashda xatolik yuz berdi.
             </div>
           )}
 

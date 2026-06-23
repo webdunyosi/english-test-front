@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { FilePlus, Trash2, HelpCircle, Check, Plus, AlertCircle, RefreshCw } from 'lucide-react';
+import { FilePlus, Trash2, HelpCircle, Check, Plus, AlertCircle, RefreshCw, ChevronDown } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const AdminQuestions = () => {
@@ -17,7 +17,9 @@ const AdminQuestions = () => {
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [formError, setFormError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedTestFilter, setSelectedTestFilter] = useState('Barchasi');
+  
+  // Accordion expanded state per test name
+  const [expandedTests, setExpandedTests] = useState({});
 
   const fetchTests = async () => {
     try {
@@ -65,7 +67,7 @@ const AdminQuestions = () => {
 
     // Validations
     if (!testName.trim()) {
-      setFormError('Test nomini kiriting yoki tanlang!');
+      setFormError('Test nomini kiriting!');
       return;
     }
     if (!questionText.trim()) {
@@ -148,10 +150,31 @@ const AdminQuestions = () => {
     }
   };
 
-  const filteredQuestions = questions.filter(q => {
-    if (selectedTestFilter === 'Barchasi') return true;
-    return q.testName?.toLowerCase() === selectedTestFilter.toLowerCase();
+  const toggleTestExpand = (name) => {
+    setExpandedTests(prev => ({
+      ...prev,
+      [name]: !prev[name]
+    }));
+  };
+
+  // Group questions by testName dynamically
+  const groupedQuestions = {};
+  questions.forEach(q => {
+    const name = q.testName || 'General Test';
+    if (!groupedQuestions[name]) {
+      groupedQuestions[name] = [];
+    }
+    groupedQuestions[name].push(q);
   });
+
+  const groupedNames = Object.keys(groupedQuestions).sort();
+
+  const getLatestDate = (qList) => {
+    if (!qList || qList.length === 0) return '';
+    const dates = qList.map(q => new Date(q.createdAt || q.updatedAt || Date.now()));
+    const latest = new Date(Math.max(...dates));
+    return latest.toLocaleDateString('uz-UZ', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
 
   return (
     <div className="space-y-8 animate-fadeIn">
@@ -280,93 +303,110 @@ const AdminQuestions = () => {
 
         {/* Questions List panel */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
-            <div className="flex items-center space-x-3">
-              <HelpCircle className="w-5 h-5 text-purple-400" />
-              <h2 className="text-xl font-bold text-white">Mavjud Savollar ({filteredQuestions.length})</h2>
-            </div>
-            
-            {/* Test Filter */}
-            {existingTests.length > 0 && (
-              <div className="relative min-w-[200px]">
-                <select
-                  value={selectedTestFilter}
-                  onChange={(e) => setSelectedTestFilter(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-900 border border-purple-500/10 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300 text-sm cursor-pointer"
-                >
-                  <option value="Barchasi">Barcha testlar</option>
-                  {existingTests.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+          <div className="flex items-center space-x-3 mb-2">
+            <HelpCircle className="w-5 h-5 text-purple-400" />
+            <h2 className="text-xl font-bold text-white">Mavjud Testlar To'plami ({groupedNames.length})</h2>
           </div>
 
           {loading ? (
             <div className="space-y-4 animate-pulse">
               {[1, 2, 3].map(n => (
-                <div key={n} className="h-32 rounded-3xl bg-purple-950/5 border border-purple-500/10"></div>
+                <div key={n} className="h-20 rounded-2xl bg-purple-950/5 border border-purple-500/10"></div>
               ))}
             </div>
           ) : error ? (
             <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-6 rounded-2xl text-center">
               {error}
             </div>
-          ) : filteredQuestions.length === 0 ? (
+          ) : groupedNames.length === 0 ? (
             <div className="text-center py-16 bg-purple-950/5 border border-purple-500/10 rounded-3xl backdrop-blur-md">
-              <p className="text-gray-400 text-lg">Bu test turida hech qanday savol topilmadi.</p>
+              <p className="text-gray-400 text-lg">Hozircha hech qanday savol qo'shilmagan.</p>
             </div>
           ) : (
-            <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-              {filteredQuestions.map((q, idx) => (
-                <div 
-                  key={q._id} 
-                  className="glass-panel p-6 rounded-2xl border border-purple-500/10 hover:border-purple-500/20 transition-all duration-300 backdrop-blur-md flex justify-between items-start gap-4"
-                >
-                  <div className="space-y-4 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-purple-400 font-bold text-lg">{idx + 1}.</span>
-                      <span className="text-xs px-2.5 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-300 rounded-full font-semibold">
-                        {q.testName || 'General Test'}
-                      </span>
-                    </div>
-                    <h3 className="text-lg font-bold text-white">
-                      {q.question}
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {q.options.map((opt, oIdx) => {
-                        const isCorrect = opt === q.correctAnswer;
-                        return (
-                          <div 
-                            key={oIdx}
-                            className={`flex items-center p-3 rounded-xl border text-sm ${
-                              isCorrect 
-                                ? 'bg-purple-500/15 border-purple-500/30 text-purple-300' 
-                                : 'bg-white/5 border-white/5 text-gray-400'
-                            }`}
-                          >
-                            <span className="font-bold mr-2 text-xs">{String.fromCharCode(65 + oIdx)}.</span>
-                            <span className="flex-1 truncate">{opt}</span>
-                            {isCorrect && <Check className="w-4 h-4 text-purple-400 shrink-0 ml-2" />}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
+            <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-2">
+              {groupedNames.map((name) => {
+                const qList = groupedQuestions[name];
+                const isExpanded = !!expandedTests[name];
+                const latestDate = getLatestDate(qList);
 
-                  <button
-                    onClick={() => handleDeleteQuestion(q._id)}
-                    className="p-2 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/30 text-red-400 rounded-xl transition-all duration-300 mt-1 shrink-0 cursor-pointer"
-                    title="Savolni o'chirish"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
+                return (
+                  <div key={name} className="space-y-2">
+                    {/* Collapsible Header */}
+                    <div 
+                      onClick={() => toggleTestExpand(name)}
+                      className="glass-panel p-5 rounded-2xl border border-purple-500/10 hover:border-purple-500/20 transition-all duration-300 backdrop-blur-md flex items-center justify-between cursor-pointer select-none"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="p-2 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-xl">
+                          <HelpCircle className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold text-white leading-tight">{name}</h3>
+                          <p className="text-xs text-gray-400 mt-1">
+                            Yangilandi: <span className="text-gray-300 font-semibold">{latestDate}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-4">
+                        <span className="text-xs px-2.5 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-300 rounded-full font-bold">
+                          {qList.length} ta savol
+                        </span>
+                        <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-300 transform ${isExpanded ? 'rotate-180 text-purple-400' : ''}`} />
+                      </div>
+                    </div>
+
+                    {/* Collapsible Content */}
+                    {isExpanded && (
+                      <div className="pl-4 space-y-3 py-1 animate-fadeIn">
+                        {qList.map((q, idx) => (
+                          <div 
+                            key={q._id} 
+                            className="bg-purple-950/5 border border-purple-500/5 hover:border-purple-500/15 p-5 rounded-2xl backdrop-blur-md flex justify-between items-start gap-4 transition-all duration-300 animate-fadeIn"
+                          >
+                            <div className="space-y-4 flex-1">
+                              <div className="flex items-center space-x-2">
+                                <span className="text-purple-400 font-bold text-base">{idx + 1}.</span>
+                              </div>
+                              <h4 className="text-base font-bold text-white">
+                                {q.question}
+                              </h4>
+                              
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {q.options.map((opt, oIdx) => {
+                                  const isCorrect = opt === q.correctAnswer;
+                                  return (
+                                    <div 
+                                      key={oIdx}
+                                      className={`flex items-center p-3 rounded-xl border text-xs ${
+                                        isCorrect 
+                                          ? 'bg-purple-500/15 border-purple-500/30 text-purple-300 font-semibold' 
+                                          : 'bg-white/5 border-white/5 text-gray-400'
+                                      }`}
+                                    >
+                                      <span className="font-bold mr-2 text-[10px]">{String.fromCharCode(65 + oIdx)}.</span>
+                                      <span className="flex-1 truncate">{opt}</span>
+                                      {isCorrect && <Check className="w-4 h-4 text-purple-400 shrink-0 ml-2" />}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            <button
+                              onClick={() => handleDeleteQuestion(q._id)}
+                              className="p-2 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/30 text-red-400 rounded-xl transition-all duration-300 mt-1 shrink-0 cursor-pointer"
+                              title="Savolni o'chirish"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

@@ -212,11 +212,19 @@ const Leaderboard = () => {
                     <span className="font-semibold text-lg text-white block">
                       {result.userName}
                     </span>
-                    {result.group && (
-                      <span className="text-xs text-gray-400">
-                        Guruh: {result.group}
-                      </span>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-400 mt-0.5">
+                      {result.group && (
+                        <span>
+                          Guruh: <span className="text-gray-300 font-semibold">{result.group}</span>
+                        </span>
+                      )}
+                      {result.group && result.hasTakenTest && <span className="w-1 h-1 rounded-full bg-white/20 hidden sm:inline-block"></span>}
+                      {result.hasTakenTest && (
+                        <span>
+                          Urinishlar: <span className="text-blue-400 font-bold">{result.attemptsCount} marta</span>
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
