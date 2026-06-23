@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
-import { FilePlus, Trash2, HelpCircle, Check, Plus, AlertCircle, RefreshCw, ChevronDown } from 'lucide-react';
+import { FilePlus, Trash2, HelpCircle, Check, Plus, AlertCircle, RefreshCw, ChevronDown, Lock, Eye, EyeOff, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const AdminQuestions = () => {
@@ -12,6 +13,8 @@ const AdminQuestions = () => {
 
   // Form states
   const [testName, setTestName] = useState('');
+  const [isOlympiad, setIsOlympiad] = useState(false);
+  const [password, setPassword] = useState('');
   const [questionText, setQuestionText] = useState('');
   const [options, setOptions] = useState(['', '', '', '']);
   const [correctAnswer, setCorrectAnswer] = useState('');
@@ -20,6 +23,61 @@ const AdminQuestions = () => {
   
   // Accordion expanded state per test name
   const [expandedTests, setExpandedTests] = useState({});
+
+  // Settings modal states
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [settingsTestName, setSettingsTestName] = useState('');
+  const [settingsIsOlympiad, setSettingsIsOlympiad] = useState(false);
+  const [settingsPassword, setSettingsPassword] = useState('');
+  const [showSettingsPassword, setShowSettingsPassword] = useState(false);
+  const [isUpdatingSettings, setIsUpdatingSettings] = useState(false);
+
+  const openSettingsModal = (name, isOlympiadVal, passwordVal) => {
+    setSettingsTestName(name);
+    setSettingsIsOlympiad(!!isOlympiadVal);
+    setSettingsPassword(passwordVal || '');
+    setShowSettingsPassword(false);
+    setShowSettingsModal(true);
+  };
+
+  const handleSaveSettings = async (e) => {
+    e.preventDefault();
+    if (settingsIsOlympiad && !settingsPassword.trim()) {
+      toast.error("Olimpiada testi uchun parol kiritilishi shart!");
+      return;
+    }
+
+    setIsUpdatingSettings(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/tests/settings`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          testName: settingsTestName,
+          isOlympiad: settingsIsOlympiad,
+          password: settingsIsOlympiad ? settingsPassword.trim() : ''
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Test sozlamalarini saqlashda xatolik yuz berdi");
+      }
+
+      toast.success("Test sozlamalari muvaffaqiyatli saqlandi!");
+      setShowSettingsModal(false);
+      fetchQuestions();
+      fetchTests();
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message);
+    } finally {
+      setIsUpdatingSettings(false);
+    }
+  };
 
   const fetchTests = async () => {
     try {
@@ -55,6 +113,19 @@ const AdminQuestions = () => {
     fetchTests();
   }, []);
 
+  useEffect(() => {
+    const mainElement = document.querySelector('main');
+    if (!mainElement) return;
+    if (showSettingsModal) {
+      mainElement.style.overflow = 'hidden';
+    } else {
+      mainElement.style.overflow = '';
+    }
+    return () => {
+      mainElement.style.overflow = '';
+    };
+  }, [showSettingsModal]);
+
   const handleOptionChange = (index, value) => {
     const updatedOptions = [...options];
     updatedOptions[index] = value;
@@ -68,6 +139,10 @@ const AdminQuestions = () => {
     // Validations
     if (!testName.trim()) {
       setFormError('Test nomini kiriting!');
+      return;
+    }
+    if (isOlympiad && !password.trim()) {
+      setFormError('Olimpiada testi uchun kirish parolini kiriting!');
       return;
     }
     if (!questionText.trim()) {
@@ -97,6 +172,8 @@ const AdminQuestions = () => {
         },
         body: JSON.stringify({
           testName: testName.trim(),
+          isOlympiad,
+          password: isOlympiad ? password.trim() : '',
           question: questionText.trim(),
           options: options.map(o => o.trim()),
           correctAnswer: correctAnswer.trim()
@@ -229,6 +306,38 @@ const AdminQuestions = () => {
               />
             </div>
 
+            {/* Olympiad Test Toggle */}
+            <div className="space-y-3">
+              <label className="flex items-center space-x-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={isOlympiad}
+                  onChange={(e) => {
+                    setIsOlympiad(e.target.checked);
+                    if (!e.target.checked) setPassword('');
+                  }}
+                  className="h-4.5 w-4.5 text-purple-600 focus:ring-purple-500 border-purple-500/30 rounded bg-gray-900 cursor-pointer"
+                />
+                <span className="text-sm font-semibold text-gray-300">Olimpiada Testi</span>
+              </label>
+
+              {isOlympiad && (
+                <div className="animate-fadeIn">
+                  <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                    Testga Kirish Paroli
+                  </label>
+                  <input
+                    type="text"
+                    required={isOlympiad}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Parolni kiriting (masalan: olimpiada123)"
+                    className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-sm"
+                  />
+                </div>
+              )}
+            </div>
+
             {/* Question Text */}
             <div>
               <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
@@ -328,6 +437,7 @@ const AdminQuestions = () => {
                 const qList = groupedQuestions[name];
                 const isExpanded = !!expandedTests[name];
                 const latestDate = getLatestDate(qList);
+                const isTestOlympiad = qList[0]?.isOlympiad;
 
                 return (
                   <div key={name} className="space-y-2">
@@ -341,7 +451,14 @@ const AdminQuestions = () => {
                           <HelpCircle className="w-5 h-5" />
                         </div>
                         <div>
-                          <h3 className="text-lg font-bold text-white leading-tight">{name}</h3>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="text-lg font-bold text-white leading-tight">{name}</h3>
+                            {isTestOlympiad && (
+                              <span className="text-[10px] px-2 py-0.5 bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 rounded-full font-bold uppercase tracking-wider">
+                                🏆 Olimpiada
+                              </span>
+                            )}
+                          </div>
                           <p className="text-xs text-gray-400 mt-1">
                             Yangilandi: <span className="text-gray-300 font-semibold">{latestDate}</span>
                           </p>
@@ -359,6 +476,27 @@ const AdminQuestions = () => {
                     {/* Collapsible Content */}
                     {isExpanded && (
                       <div className="pl-4 space-y-3 py-1 animate-fadeIn">
+                        {/* Test settings panel */}
+                        <div className="bg-purple-950/10 border border-purple-500/10 p-4 rounded-2xl mb-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                          <div className="flex items-center space-x-3">
+                            <span className="text-sm font-semibold text-gray-300">Test turi:</span>
+                            <span className={`text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider ${
+                              isTestOlympiad 
+                                ? 'bg-yellow-500/10 border border-yellow-500/20 text-yellow-400' 
+                                : 'bg-gray-500/10 border border-gray-500/20 text-gray-400'
+                            }`}>
+                              {isTestOlympiad ? '🏆 Olimpiada' : 'Oddiy Test'}
+                            </span>
+                          </div>
+                          
+                          <button
+                            onClick={() => openSettingsModal(name, isTestOlympiad, qList[0]?.password || '')}
+                            className="py-2 px-4 bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 text-purple-300 hover:text-white rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer"
+                          >
+                            Sozlamalar & Parolni o'zgartirish
+                          </button>
+                        </div>
+
                         {qList.map((q, idx) => (
                           <div 
                             key={q._id} 
@@ -411,8 +549,107 @@ const AdminQuestions = () => {
           )}
         </div>
       </div>
+
+      {/* Test Settings Modal */}
+      {showSettingsModal && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#090514]/80 backdrop-blur-md animate-fadeIn">
+          <div className="glass-panel max-w-md w-full p-8 rounded-3xl border border-purple-500/20 shadow-[0_10px_50px_rgba(168,85,247,0.2)] animate-fadeIn">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-2.5 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-xl">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <h3 className="text-xl font-bold text-white">Test Sozlamalari</h3>
+              </div>
+              <button 
+                onClick={() => setShowSettingsModal(false)}
+                className="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveSettings} className="space-y-5">
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                  Test Nomi
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={settingsTestName}
+                  className="w-full px-4 py-3 bg-gray-900/50 border border-white/5 rounded-2xl text-gray-400 text-sm cursor-not-allowed"
+                />
+              </div>
+
+              {/* Olympiad Test Toggle */}
+              <div className="space-y-3">
+                <label className="flex items-center space-x-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={settingsIsOlympiad}
+                    onChange={(e) => {
+                      setSettingsIsOlympiad(e.target.checked);
+                      if (!e.target.checked) setSettingsPassword('');
+                    }}
+                    className="h-4.5 w-4.5 text-purple-600 focus:ring-purple-500 border-purple-500/30 rounded bg-gray-900 cursor-pointer"
+                  />
+                  <span className="text-sm font-semibold text-gray-300">Olimpiada Testi</span>
+                </label>
+
+                {settingsIsOlympiad && (
+                  <div className="animate-fadeIn">
+                    <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                      Testga Kirish Paroli
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showSettingsPassword ? "text" : "password"}
+                        required={settingsIsOlympiad}
+                        value={settingsPassword}
+                        onChange={(e) => setSettingsPassword(e.target.value)}
+                        placeholder="Parolni kiriting..."
+                        className="w-full pl-4 pr-12 py-3 bg-gray-900 border border-purple-500/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-sm"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowSettingsPassword(!showSettingsPassword)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-purple-400 transition-colors focus:outline-none cursor-pointer"
+                      >
+                        {showSettingsPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowSettingsModal(false)}
+                  className="flex-1 py-3 px-4 bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300 hover:text-white text-sm font-bold rounded-2xl transition-all duration-300 cursor-pointer"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdatingSettings}
+                  className="flex-1 py-3 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-bold rounded-2xl shadow-[0_4px_15px_rgba(168,85,247,0.3)] transition-all duration-300 disabled:opacity-50 cursor-pointer"
+                >
+                  {isUpdatingSettings ? "Saqlanmoqda..." : "Saqlash"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
     </div>
   );
 };
 
 export default AdminQuestions;
+
