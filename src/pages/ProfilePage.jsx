@@ -70,26 +70,26 @@ const ProfilePage = () => {
 
   const menuItems = [
     {
-      icon: <CalendarCheck className="w-5 h-5 text-emerald-400" />,
+      icon: <CalendarCheck className="w-5 h-5 text-blue-400" />,
       label: "Mening buyurtmalarim",
-      bg: "bg-emerald-500/15",
-      border: "border-emerald-500/20",
+      bg: "bg-blue-500/15",
+      border: "border-blue-500/20",
       badge: null,
       onClick: () => toast('Tez orada mavjud bo\'ladi!', { icon: '📋' })
     },
     {
-      icon: <Bell className="w-5 h-5 text-emerald-400" />,
+      icon: <Bell className="w-5 h-5 text-blue-400" />,
       label: "Mening bildirishnomalarim",
-      bg: "bg-emerald-500/15",
-      border: "border-emerald-500/20",
+      bg: "bg-blue-500/15",
+      border: "border-blue-500/20",
       badge: null,
       onClick: () => toast('Bildirishnomalar tez orada!', { icon: '🔔' })
     },
     {
-      icon: <BookOpen className="w-5 h-5 text-emerald-400" />,
+      icon: <BookOpen className="w-5 h-5 text-blue-400" />,
       label: "Ilovadan foydalanish darsliklari",
-      bg: "bg-emerald-500/15",
-      border: "border-emerald-500/20",
+      bg: "bg-blue-500/15",
+      border: "border-blue-500/20",
       badge: null,
       onClick: () => toast('Darsliklar tez orada!', { icon: '📚' })
     },
@@ -97,17 +97,17 @@ const ProfilePage = () => {
 
   const contactItems = [
     {
-      icon: <Send className="w-5 h-5 text-sky-400" />,
-      bg: "bg-sky-500/15",
-      border: "border-sky-500/20",
+      icon: <Send className="w-5 h-5 text-blue-400" />,
+      bg: "bg-blue-500/15",
+      border: "border-blue-500/20",
       label: "O'QITUVCHI TELEGRAM",
       value: "@Khikoyat_english_97",
       onClick: () => window.open('https://t.me/Khikoyat_english_97', '_blank')
     },
     {
-      icon: <Phone className="w-5 h-5 text-emerald-400" />,
-      bg: "bg-emerald-500/15",
-      border: "border-emerald-500/20",
+      icon: <Phone className="w-5 h-5 text-blue-400" />,
+      bg: "bg-blue-500/15",
+      border: "border-blue-500/20",
       label: "O'QITUVCHI TELEFON",
       value: "+998 93 108 17 97",
       onClick: () => window.open('tel:+998931081797', '_blank')
@@ -124,16 +124,16 @@ const ProfilePage = () => {
 
         {/* User Info Card */}
         <div
-          className="rounded-2xl border border-white/10 mb-4 p-4 flex items-center gap-4 relative"
-          style={{ background: 'rgba(15, 40, 30, 0.7)', backdropFilter: 'blur(12px)' }}
+          className="rounded-2xl border border-blue-500/20 mb-4 p-4 flex items-center gap-4 relative"
+          style={{ background: 'rgba(11, 17, 32, 0.85)', backdropFilter: 'blur(12px)' }}
         >
           {/* Avatar */}
           <div className="relative flex-shrink-0">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center border-2 border-emerald-400/60 shadow-lg shadow-emerald-500/20 overflow-hidden">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center border-2 border-blue-400/60 shadow-lg shadow-blue-500/20 overflow-hidden">
               <User className="w-9 h-9 text-white" />
             </div>
             {/* Online indicator */}
-            <span className="absolute bottom-0.5 right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#0b1120]"></span>
+            <span className="absolute bottom-0.5 right-0.5 w-3 h-3 bg-blue-400 rounded-full border-2 border-[#0b1120]"></span>
           </div>
 
           {/* User Details */}
@@ -145,7 +145,7 @@ const ProfilePage = () => {
               @{user?.username || '—'}
             </p>
             <div className="mt-1.5">
-              <span className="inline-block text-[10px] font-bold tracking-widest px-2.5 py-0.5 rounded-full border border-emerald-500/40 text-emerald-400 bg-emerald-500/10">
+              <span className="inline-block text-[10px] font-bold tracking-widest px-2.5 py-0.5 rounded-full border border-blue-500/40 text-blue-400 bg-blue-500/10">
                 {user?.role === 'admin' ? 'ADMIN' : 'MIJOZ'}
               </span>
               {user?.group && (
@@ -168,14 +168,14 @@ const ProfilePage = () => {
 
         {/* Menu Items */}
         <div
-          className="rounded-2xl border border-white/10 mb-4 overflow-hidden"
-          style={{ background: 'rgba(15, 40, 30, 0.7)', backdropFilter: 'blur(12px)' }}
+          className="rounded-2xl border border-blue-500/15 mb-4 overflow-hidden"
+          style={{ background: 'rgba(11, 17, 32, 0.85)', backdropFilter: 'blur(12px)' }}
         >
           {menuItems.map((item, idx) => (
             <button
               key={idx}
               onClick={item.onClick}
-              className="w-full flex items-center gap-4 px-4 py-4 hover:bg-white/5 transition-all duration-200 cursor-pointer group border-b border-white/5 last:border-b-0"
+              className="w-full flex items-center gap-4 px-4 py-4 hover:bg-blue-500/5 transition-all duration-200 cursor-pointer group border-b border-blue-500/10 last:border-b-0"
             >
               <div className={`w-10 h-10 rounded-xl ${item.bg} border ${item.border} flex items-center justify-center flex-shrink-0`}>
                 {item.icon}
@@ -195,14 +195,14 @@ const ProfilePage = () => {
 
         {/* Contact Items */}
         <div
-          className="rounded-2xl border border-white/10 mb-4 overflow-hidden"
-          style={{ background: 'rgba(15, 40, 30, 0.7)', backdropFilter: 'blur(12px)' }}
+          className="rounded-2xl border border-blue-500/15 mb-4 overflow-hidden"
+          style={{ background: 'rgba(11, 17, 32, 0.85)', backdropFilter: 'blur(12px)' }}
         >
           {contactItems.map((item, idx) => (
             <button
               key={idx}
               onClick={item.onClick}
-              className="w-full flex items-center gap-4 px-4 py-4 hover:bg-white/5 transition-all duration-200 cursor-pointer group border-b border-white/5 last:border-b-0"
+              className="w-full flex items-center gap-4 px-4 py-4 hover:bg-blue-500/5 transition-all duration-200 cursor-pointer group border-b border-blue-500/10 last:border-b-0"
             >
               <div className={`w-10 h-10 rounded-xl ${item.bg} border ${item.border} flex items-center justify-center flex-shrink-0`}>
                 {item.icon}
