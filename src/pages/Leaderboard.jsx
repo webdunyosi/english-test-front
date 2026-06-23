@@ -20,7 +20,9 @@ const Leaderboard = () => {
         const response = await fetch(`${API_BASE}/api/tests`);
         if (response.ok) {
           const data = await response.json();
-          setTests(data.map(t => t.name));
+          // Filter only Olympiad tests for the dropdown
+          const olympiadTests = data.filter(t => t.isOlympiad).map(t => t.name);
+          setTests(olympiadTests);
         }
       } catch (err) {
         console.error("Error fetching tests list:", err);
