@@ -118,12 +118,18 @@ const AdminMobileBottomNav = () => {
 
         {/* Tab 3: Center Elevated Profile Button */}
         <div className="relative w-16 h-16 flex items-center justify-center -mt-6">
-          <button
-            onClick={() => setShowModal(true)}
-            className="w-14 h-14 rounded-full border-2 border-purple-500/50 bg-[#090514] text-purple-400 flex items-center justify-center shadow-lg shadow-purple-500/30 hover:border-purple-400 transition-all duration-300 focus:outline-none cursor-pointer"
+          <NavLink
+            to="/admin/profile"
+            className={({ isActive }) =>
+              `w-14 h-14 rounded-full border-2 bg-[#090514] flex items-center justify-center shadow-lg transition-all duration-300 focus:outline-none cursor-pointer ${
+                isActive
+                  ? 'border-purple-400 text-purple-300 shadow-purple-500/40'
+                  : 'border-purple-500/50 text-purple-400 shadow-purple-500/30 hover:border-purple-400'
+              }`
+            }
           >
             <User className="w-6 h-6" />
-          </button>
+          </NavLink>
           <span className="absolute bottom-[-14px] text-[9px] font-semibold text-purple-400">Profil</span>
         </div>
 

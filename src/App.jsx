@@ -4,11 +4,13 @@ import { Toaster } from 'react-hot-toast';
 import Layout from './components/Layout';
 import TestPage from './pages/TestPage';
 import Leaderboard from './pages/Leaderboard';
+import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AdminLayout from './components/AdminLayout';
 import AdminUsers from './pages/AdminUsers';
 import AdminQuestions from './pages/AdminQuestions';
+import AdminProfilePage from './pages/AdminProfilePage';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -75,6 +77,7 @@ const App = () => {
             <Route index element={<Navigate to="/test" replace />} />
             <Route path="test" element={<TestPage />} />
             <Route path="leaderboard" element={<Leaderboard />} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
 
           {/* Admin Protected Routes */}
@@ -86,6 +89,7 @@ const App = () => {
             <Route index element={<Navigate to="users" replace />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="questions" element={<AdminQuestions />} />
+            <Route path="profile" element={<AdminProfilePage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/test" replace />} />

@@ -1,6 +1,6 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Users, FilePlus, LogOut, ArrowLeft, ShieldAlert } from 'lucide-react';
+import { Users, FilePlus, LogOut, ArrowLeft, ShieldAlert, User } from 'lucide-react';
 import AdminHeader from './AdminHeader';
 import AdminMobileBottomNav from './AdminMobileBottomNav';
 
@@ -64,6 +64,18 @@ const AdminLayout = () => {
             >
               <FilePlus className="w-5 h-5" />
               <span>Testlar Qo'shish</span>
+            </Link>
+
+            <Link
+              to="/admin/profile"
+              className={`flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 ${
+                isActive('/admin/profile')
+                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.15)]'
+                  : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'
+              }`}
+            >
+              <User className="w-5 h-5" />
+              <span>Profil</span>
             </Link>
           </nav>
         </div>
